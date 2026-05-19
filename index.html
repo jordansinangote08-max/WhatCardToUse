@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PH Loan Due Date Calculator</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f6f4ef;
+    --surface: rgba(255,255,255,0.78);
+    --card: rgba(255,255,255,0.9);
+    --border: #e7e1d8;
+    --accent1: #d9902f;
+    --accent2: #d95f59;
+    --accent3: #3aa981;
+    --accent4: #5d7ce2;
+    --accent5: #c58b00;
+    --text: #1f2430;
+    --muted: #7d8190;
+    --glow1: rgba(217,144,47,0.12);
+    --glow2: rgba(217,95,89,0.12);
+    --glow3: rgba(58,169,129,0.12);
+    --glow4: rgba(93,124,226,0.12);
+    --glow5: rgba(197,139,0,0.12);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background:
+      radial-gradient(circle at top left, rgba(217,144,47,0.16), transparent 35%),
+      radial-gradient(circle at bottom right, rgba(93,124,226,0.14), transparent 32%),
+      linear-gradient(180deg, #fbfaf7 0%, var(--bg) 100%);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    padding: 42px 16px 80px;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  body::before, body::after {
+    content: '';
+    position: fixed;
+    border-radius: 999px;
+    filter: blur(90px);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  body::before {
+    width: 360px;
+    height: 360px;
+    top: -120px;
+    left: -100px;
+    background: rgba(217,144,47,0.13);
+  }
+
+  body::after {
+    width: 340px;
+    height: 340px;
+    bottom: -100px;
+    right: -100px;
+    background: rgba(93,124,226,0.12);
+  }
+
+  .container {
+    max-width: 760px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 36px;
+  }
+
+  .header-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    border: 1px solid var(--border);
+    color: var(--accent1);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 7px 15px;
+    border-radius: 999px;
+    margin-bottom: 18px;
+    box-shadow: 0 10px 26px rgba(31,36,48,0.06);
+  }
+
+  .header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(32px, 7vw, 54px);
+    font-weight: 700;
+    line-height: 1.05;
+    letter-spacing: -1px;
+    margin-bottom: 12px;
+  }
+
+  .header h1 span {
+    background: linear-gradient(90deg, var(--accent1), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .header p {
+    color: var(--muted);
+    font-size: 15px;
+    font-weight: 400;
+    line-height: 1.65;
+  }
+
+  .date-box {
+    background: var(--surface);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: 1px solid var(--border);
+    border-radius: 28px;
+    padding: 30px;
+    margin-bottom: 22px;
+    text-align: center;
+    box-shadow: 0 22px 60px rgba(31,36,48,0.08);
+  }
+
+  .date-box label {
+    display: block;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1.6px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+
+  .date-input-wrap {
+    position: relative;
+    display: inline-block;
+    width: min(100%, 300px);
+  }
+
+  .date-input-wrap input[type="date"] {
+    background: #fbfaf7;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 19px;
+    font-weight: 700;
+    padding: 15px 18px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+    cursor: pointer;
+    width: 100%;
+  }
+
+  .date-input-wrap input[type="date"]:focus {
+    background: #fff;
+    border-color: var(--accent1);
+    box-shadow: 0 0 0 5px var(--glow1);
+  }
+
+  
+  .date-input-wrap input[type="number"] {
+    background: #fbfaf7;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 19px;
+    font-weight: 700;
+    padding: 15px 18px;
+    outline: none;
+    width: 100%;
+  }
+
+.date-input-wrap input[type="date"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+  }
+
+  .today-btn {
+    display: inline-block;
+    margin-top: 14px;
+    background: #1f2430;
+    border: 0;
+    color: #fff;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 800;
+    padding: 10px 18px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
+  }
+
+  .today-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 12px 24px rgba(31,36,48,0.18);
+  }
+
+  .results-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    margin-bottom: 16px;
+  }
+
+  @media (max-width: 620px) {
+    .results-grid { grid-template-columns: 1fr; }
+  }
+
+  .result-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.22s, box-shadow 0.22s;
+    cursor: default;
+    box-shadow: 0 16px 42px rgba(31,36,48,0.07);
+  }
+
+  .result-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 24px;
+    opacity: 0.55;
+    pointer-events: none;
+  }
+
+  .result-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 24px 56px rgba(31,36,48,0.12);
+  }
+
+  .card-orange::before { background: linear-gradient(135deg, var(--glow1), transparent 45%); }
+  .card-red::before { background: linear-gradient(135deg, var(--glow2), transparent 45%); }
+  .card-green::before { background: linear-gradient(135deg, var(--glow3), transparent 45%); }
+  .card-blue::before { background: linear-gradient(135deg, var(--glow4), transparent 45%); }
+  .card-gold::before { background: linear-gradient(135deg, var(--glow5), transparent 45%); }
+
+  .card-label {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1.6px;
+    text-transform: uppercase;
+    margin-bottom: 5px;
+    position: relative;
+  }
+
+  .card-orange .card-label { color: var(--accent1); }
+  .card-red .card-label { color: var(--accent2); }
+  .card-green .card-label { color: var(--accent3); }
+  .card-blue .card-label { color: var(--accent4); }
+  .card-gold .card-label { color: var(--accent5); }
+
+  .card-subtitle {
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 18px;
+    font-weight: 400;
+    position: relative;
+  }
+
+  .card-divider {
+    height: 1px;
+    background: var(--border);
+    margin-bottom: 16px;
+    position: relative;
+  }
+
+  .card-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 14px;
+    align-items: center;
+    margin-bottom: 10px;
+    position: relative;
+  }
+
+  .card-row:last-child { margin-bottom: 0; }
+
+  .row-key {
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 500;
+  }
+
+  .row-val {
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--text);
+    text-align: right;
+  }
+
+  .due-date-big {
+    font-family: 'Playfair Display', serif;
+    font-size: 25px;
+    font-weight: 700;
+    line-height: 1.1;
+    margin-top: 6px;
+    position: relative;
+  }
+
+  .card-orange .due-date-big { color: var(--accent1); }
+  .card-red .due-date-big { color: var(--accent2); }
+  .card-green .due-date-big { color: var(--accent3); }
+  .card-blue .due-date-big { color: var(--accent4); }
+  .card-gold .due-date-big { color: var(--accent5); }
+
+  .days-pill {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 5px 11px;
+    border-radius: 999px;
+    margin-top: 10px;
+    position: relative;
+  }
+
+  .card-orange .days-pill { background: var(--glow1); color: var(--accent1); }
+  .card-red .days-pill { background: var(--glow2); color: var(--accent2); }
+  .card-green .days-pill { background: var(--glow3); color: var(--accent3); }
+  .card-blue .days-pill { background: var(--glow4); color: var(--accent4); }
+  .card-gold .days-pill { background: var(--glow5); color: var(--accent5); }
+
+  .empty-state {
+    background: rgba(255,255,255,0.7);
+    border: 1px dashed var(--border);
+    border-radius: 24px;
+    text-align: center;
+    padding: 58px 20px;
+    color: var(--muted);
+  }
+
+  .empty-icon {
+    font-size: 46px;
+    margin-bottom: 14px;
+    opacity: 0.72;
+  }
+
+  .empty-state p {
+    font-size: 14px;
+    line-height: 1.65;
+  }
+
+  .footer-note {
+    background: rgba(255,255,255,0.72);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 18px 20px;
+    margin-top: 24px;
+    box-shadow: 0 12px 34px rgba(31,36,48,0.05);
+  }
+
+  .footer-note p {
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.8;
+  }
+
+  .footer-note strong {
+    color: var(--text);
+    font-weight: 800;
+  }
+
+  .verdict {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 16px;
+    padding: 11px 14px;
+    border-radius: 14px;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.4px;
+    position: relative;
+  }
+
+  .verdict-good {
+    background: rgba(58,169,129,0.11);
+    border: 1px solid rgba(58,169,129,0.24);
+    color: var(--accent3);
+  }
+
+  .verdict-bad {
+    background: rgba(217,95,89,0.11);
+    border: 1px solid rgba(217,95,89,0.26);
+    color: var(--accent2);
+  }
+
+  .verdict-icon { font-size: 15px; }
+
+  .verdict-text { flex: 1; }
+
+  .verdict-salary {
+    font-size: 10px;
+    font-weight: 500;
+    opacity: 0.78;
+    margin-top: 2px;
+  }
+
+  .salary-info {
+    background: rgba(255,255,255,0.76);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 14px 18px;
+    margin-top: -6px;
+    margin-bottom: 20px;
+    text-align: center;
+    font-size: 12px;
+    color: var(--accent3);
+    font-weight: 800;
+    letter-spacing: 0.2px;
+    box-shadow: 0 12px 32px rgba(31,36,48,0.06);
+  }
+
+  .salary-info span { color: var(--muted); font-weight: 500; }
+
+  .recommendation-box {
+    background: rgba(58,169,129,0.08);
+    border: 1px solid rgba(58,169,129,0.28);
+    color: var(--text);
+    border-radius: 18px;
+    padding: 16px 20px;
+    margin-top: -6px;
+    margin-bottom: 20px;
+    font-size: 14px;
+    line-height: 1.7;
+    box-shadow: 0 12px 32px rgba(31,36,48,0.05);
+  }
+
+  .recommendation-box strong {
+    color: var(--accent3);
+    font-weight: 800;
+  }
+
+  /* Responsive polish */
+  @media (max-width: 768px) {
+    body { padding: 28px 12px 60px; }
+    .date-box { padding: 24px 18px; border-radius: 24px; }
+    .result-card { padding: 20px; }
+    .footer-note { padding: 16px; }
+  }
+
+  @media (max-width: 420px) {
+    .header { margin-bottom: 26px; }
+    .header-badge { font-size: 9px; letter-spacing: 1.5px; }
+    .header p { font-size: 13px; }
+    .date-input-wrap input[type="date"] { font-size: 16px; padding: 14px 14px; }
+    .today-btn { width: 100%; max-width: 300px; }
+    .card-row { align-items: flex-start; }
+    .row-val { font-size: 12px; }
+    .due-date-big { font-size: 22px; }
+    .recommendation-box { font-size: 13px; padding: 14px 16px; }
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .animate-in {
+    animation: fadeUp 0.35s ease forwards;
+  }
+
+  .animate-in:nth-child(1) { animation-delay: 0s; }
+  .animate-in:nth-child(2) { animation-delay: 0.06s; }
+  .animate-in:nth-child(3) { animation-delay: 0.12s; }
+  .animate-in:nth-child(4) { animation-delay: 0.18s; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <div class="header-badge">PH Finance Tools</div>
+    <h1>Loan Due Date <span>Calculator</span></h1>
+    <p>Pick your loan date and instantly see your due dates across all platforms.</p>
+  </div>
+
+  <div class="date-box">
+    <label>Select Loan Date</label>
+    <div class="date-input-wrap">
+      <input type="date" id="loanDate" />
+    </div>
+    <br>
+    <button class="today-btn" onclick="setToday()">📅 Use Today</button>
+  
+  <div class="salary-day-wrap" style="margin-top:18px;">
+    <label>Select Payday</label>
+    <div class="date-input-wrap">
+      <input type="date" id="salaryDate" />
+    </div>
+  </div>
+
+
+  
+  <div class="salary-day-wrap" style="margin-top:18px;">
+    <label>MariBank Mode</label>
+
+    <div style="display:flex;gap:18px;justify-content:center;flex-wrap:wrap;margin-top:10px;">
+      <label style="font-size:14px;">
+        <input type="radio" name="mariMode" value="first" checked>
+        First Loan
+      </label>
+
+      <label style="font-size:14px;">
+        <input type="radio" name="mariMode" value="existing">
+        Already Have Active Loan
+      </label>
+    </div>
+
+    <div id="existingDueWrap" style="display:none;margin-top:14px;">
+      <label style="margin-bottom:10px;">Current MariBank Due Day</label>
+      <div class="date-input-wrap">
+        <input type="number" id="existingDueDay" min="1" max="31" value="20" />
+      </div>
+    </div>
+  </div>
+
+
+  </div>
+
+  <div id="salaryInfo" class="salary-info" style="display:none;"></div>
+
+  <div id="results">
+    <div class="empty-state">
+      <div class="empty-icon">📆</div>
+      <p>Enter your loan date above<br>to calculate all due dates.</p>
+    </div>
+  </div>
+
+  <div class="footer-note">
+    <p>
+      <strong>SPayLater / BillEase:</strong> Cut-off on 5th; orders from 5th–next 4th are billed the following 15th. &nbsp;|&nbsp;
+      <strong>BillEase (alt):</strong> Cut-off on 16th; due on 25th of current or next month. &nbsp;|&nbsp;
+      <strong>UnionBank:</strong> Statement cut-off 10th; due on 25th of current or next month. &nbsp;|&nbsp;
+      <strong>EastWest:</strong> Statement cut-off 21st; due on 15th of next or month after. &nbsp;|&nbsp;
+      <strong>Maya Credit:</strong> Billing statement every 16th; due every end of the month. &nbsp;|&nbsp;
+      <strong>MariBank:</strong> Due dates follow withdrawal dates monthly and may move to next cycle if too close to due date.
+    </p>
+  </div>
+
+</div>
+
+<script>
+  const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  function fmt(d) {
+    return `${MONTHS[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
+  }
+  function fmtShort(d) {
+    return `${SHORT[d.getMonth()]} ${d.getDate()}`;
+  }
+
+  function addMonths(d, n) {
+    const r = new Date(d);
+    r.setMonth(r.getMonth() + n);
+    return r;
+  }
+
+  function daysUntil(dueDate, from) {
+    const diff = Math.ceil((dueDate - from) / (1000 * 60 * 60 * 24));
+    return diff;
+  }
+
+  function daysText(d, from) {
+    const n = daysUntil(d, from);
+    if (n < 0) return `${Math.abs(n)}d overdue`;
+    if (n === 0) return 'Due today!';
+    return `${n} days left`;
+  }
+
+  // SPayLater / BillEase (Shopee billing table):
+  // Cut-off is 5th. If loan date is 5 or later → billing period ends next 4th → billing date next 5th → due next 15th
+  // If loan date is 1-4 → in current cycle that started last month's 5th → due this month's 15th
+  function calcSPayLater(date) {
+    const day = date.getDate();
+    let dueMonth, dueYear;
+    if (day >= 5) {
+      // Billing date: 5th of following month, due: 15th of following month
+      const d = addMonths(date, 1);
+      dueMonth = d.getMonth();
+      dueYear = d.getFullYear();
+    } else {
+      // 1-4: current month's 15th
+      dueMonth = date.getMonth();
+      dueYear = date.getFullYear();
+    }
+    return new Date(dueYear, dueMonth, 15);
+  }
+
+  // BillEase: cut-off 16th, due 25th
+  // If day <= 16: due 25th of SAME month
+  // If day > 16: due 25th of NEXT month
+  function calcBillEase(date) {
+    const day = date.getDate();
+    let dueMonth, dueYear;
+    if (day <= 16) {
+      dueMonth = date.getMonth();
+      dueYear = date.getFullYear();
+    } else {
+      const d = addMonths(date, 1);
+      dueMonth = d.getMonth();
+      dueYear = d.getFullYear();
+    }
+    return new Date(dueYear, dueMonth, 25);
+  }
+
+  // UnionBank: cut-off 10th, due 25th
+  // day <= 10: due 25th of SAME month
+  // day > 10: due 25th of NEXT month
+  function calcUnionBank(date) {
+    const day = date.getDate();
+    let dueMonth, dueYear;
+    if (day <= 10) {
+      dueMonth = date.getMonth();
+      dueYear = date.getFullYear();
+    } else {
+      const d = addMonths(date, 1);
+      dueMonth = d.getMonth();
+      dueYear = d.getFullYear();
+    }
+    return new Date(dueYear, dueMonth, 25);
+  }
+
+  // EastWest: statement cut-off 21st, due 15th
+  // day <= 21: due 15th of NEXT month
+  // day > 21: due 15th of month after next
+  function calcEastWest(date) {
+    const day = date.getDate();
+    let months = day <= 21 ? 1 : 2;
+    const d = addMonths(date, months);
+    return new Date(d.getFullYear(), d.getMonth(), 15);
+  }
+
+  // Maya Credit: billing statement every 16th, due every end of the month
+  // day <= 16: due end of SAME month
+  // day > 16: due end of NEXT month
+  function calcMayaCredit(date) {
+    const day = date.getDate();
+    let target = day <= 16 ? new Date(date) : addMonths(date, 1);
+    return new Date(target.getFullYear(), target.getMonth() + 1, 0);
+  }
+
+  
+  // MariBank:
+  // First loan follows withdrawal day monthly.
+  // If within 10 days before month end, move to following month.
+  
+  // MariBank Mode
+  function calcMariBank(date) {
+    const mode = document.querySelector('input[name="mariMode"]:checked').value;
+
+    // FIRST LOAN
+    if (mode === 'first') {
+      const next = addMonths(date, 1);
+      return new Date(next.getFullYear(), next.getMonth(), Math.min(date.getDate(), 28));
+    }
+
+    // EXISTING ACTIVE LOAN
+    const existingDueDay = parseInt(document.getElementById('existingDueDay').value || '20');
+
+    let due = new Date(date.getFullYear(), date.getMonth() + 1, existingDueDay);
+
+    // If too close to due date (10 days or less), push next cycle
+    const diff = Math.ceil((due - date) / (1000 * 60 * 60 * 24));
+
+    if (diff <= 10) {
+      due = new Date(date.getFullYear(), date.getMonth() + 2, existingDueDay);
+    }
+
+    return due;
+  }
+
+function statementCycle(cutoff, date) {
+    const day = date.getDate();
+    if (day <= cutoff) {
+      const prev = addMonths(date, -1);
+      return `${fmtShort(new Date(prev.getFullYear(), prev.getMonth(), cutoff+1))} – ${fmtShort(new Date(date.getFullYear(), date.getMonth(), cutoff))}`;
+    } else {
+      const next = addMonths(date, 1);
+      return `${fmtShort(new Date(date.getFullYear(), date.getMonth(), cutoff+1))} – ${fmtShort(new Date(next.getFullYear(), next.getMonth(), cutoff))}`;
+    }
+  }
+
+  // SPayLater cycle label
+  function sPayCycle(date) {
+    const day = date.getDate();
+    if (day >= 5) {
+      const end = addMonths(date, 1);
+      return `${fmtShort(new Date(date.getFullYear(), date.getMonth(), 5))} – ${fmtShort(new Date(end.getFullYear(), end.getMonth(), 4))}`;
+    } else {
+      const start = addMonths(date, -1);
+      return `${fmtShort(new Date(start.getFullYear(), start.getMonth(), 5))} – ${fmtShort(new Date(date.getFullYear(), date.getMonth(), 4))}`;
+    }
+  }
+
+  let SALARY_DAY = 24;
+
+  // Find the next salary date on or after a given date
+  function nextSalary(fromDate) {
+    const d = fromDate.getDate();
+    if (d <= SALARY_DAY) {
+      return new Date(fromDate.getFullYear(), fromDate.getMonth(), SALARY_DAY);
+    } else {
+      const next = addMonths(fromDate, 1);
+      return new Date(next.getFullYear(), next.getMonth(), SALARY_DAY);
+    }
+  }
+
+  // Verdict logic:
+  // After you loan, find the NEXT salary. That salary pays off the loan.
+  // But "next salary" money is already budgeted for living expenses —
+  // you need the due date to fall AFTER that next salary,
+  // meaning you pay from the salary that arrives just before the due date.
+  // GOOD = due date is >= the salary that comes AFTER the next one (2nd salary from loan)
+  //       i.e., the salary JUST BEFORE the due date is at least 1 salary cycle after loan date
+  // Simpler rule: find the salary date that is <= dueDate.
+  // If that salary date is the SAME as nextSalary(loanDate) → DO NOT LOAN (too tight)
+  // If that salary date is >= nextSalary(loanDate) + 1 month → GOOD
+  // Actually: GOOD only if dueDate >= the salary that comes one full cycle AFTER nextSalary
+  function verdict(loanDate, dueDate) {
+    const nextSal = nextSalary(loanDate); // e.g. May 24
+    // The salary you'll actually use to pay: must be the one AFTER nextSal
+    const payingSal = new Date(nextSal);
+    payingSal.setMonth(payingSal.getMonth() + 1); // e.g. June 24
+    // GOOD = due date is on or after that paying salary
+    const isGood = dueDate >= payingSal;
+    return { isGood, nextSalDate: nextSal, payingSal };
+  }
+
+  function verdictHTML(loanDate, dueDate) {
+    const { isGood, nextSalDate, payingSal } = verdict(loanDate, dueDate);
+    if (isGood) {
+      return `
+        <div class="verdict verdict-good">
+          <span class="verdict-icon">✅</span>
+          <div>
+            <div class="verdict-text">GOOD TO LOAN</div>
+            <div class="verdict-salary">Due after salary on ${fmtShort(payingSal)} ✓</div>
+          </div>
+        </div>`;
+    } else {
+      return `
+        <div class="verdict verdict-bad">
+          <span class="verdict-icon">🚫</span>
+          <div>
+            <div class="verdict-text">DO NOT LOAN</div>
+            <div class="verdict-salary">Due before ${fmtShort(payingSal)} — no money yet!</div>
+          </div>
+        </div>`;
+    }
+  }
+
+  function recommendGoodBanks(options, loanDate) {
+    const good = options
+      .filter(option => verdict(loanDate, option.dueDate).isGood)
+      .sort((a, b) => b.dueDate - a.dueDate);
+
+    const avoid = options
+      .filter(option => !verdict(loanDate, option.dueDate).isGood);
+
+    return `
+      <div class="recommendation-box">
+        <strong>Good:</strong> ${good.length ? good.map(x => x.name).join(', ') : 'None'}
+        ${avoid.length ? `<br><strong style="color:var(--accent2)">Avoid for now:</strong> ${avoid.map(x => x.name).join(', ')}` : ''}
+      </div>
+    `;
+  }
+
+
+function cardHTML(theme, label, sublabel, cycleLabel, dueDate, loanDate, best = false) {
+    const days = daysText(dueDate, loanDate);
+    return `
+      <div class="result-card card-${theme} animate-in">
+        <div class="card-label">${label}${best ? " 🏆 BEST FOR TODAY" : ""}</div>
+        <div class="card-subtitle">${sublabel}</div>
+        <div class="card-divider"></div>
+        <div class="card-row">
+          <span class="row-key">Statement Cycle</span>
+          <span class="row-val">${cycleLabel}</span>
+        </div>
+        <div class="card-row">
+          <span class="row-key">Loan Date</span>
+          <span class="row-val">${fmtShort(loanDate)}</span>
+        </div>
+        <div style="margin-top:12px; position:relative;">
+          <div class="row-key" style="font-size:10px;letter-spacing:1px;text-transform:uppercase;">Due Date</div>
+          <div class="due-date-big">${fmt(dueDate)}</div>
+          <span class="days-pill">${days}</span>
+        </div>
+        ${verdictHTML(loanDate, dueDate)}
+      </div>
+    `;
+  }
+
+  function calculate() {
+    const input = document.getElementById('loanDate').value;
+    const resultsEl = document.getElementById('results');
+    const salaryDateInput = document.getElementById('salaryDate').value;
+    if (salaryDateInput) {
+      const [, , salarySelectedDay] = salaryDateInput.split('-').map(Number);
+      SALARY_DAY = salarySelectedDay;
+    } else {
+      SALARY_DAY = 24;
+    }
+    const salaryInfoEl = document.getElementById('salaryInfo');
+
+    if (!input) {
+      resultsEl.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-icon">📆</div>
+          <p>Enter your loan date above<br>to calculate all due dates.</p>
+        </div>`;
+      salaryInfoEl.style.display = 'none';
+      return;
+    }
+
+    // Parse date in local time (avoid timezone shift)
+    const [y, m, d] = input.split('-').map(Number);
+    const date = new Date(y, m - 1, d);
+
+    const sal = nextSalary(date);
+    const payingSal = new Date(sal); payingSal.setMonth(payingSal.getMonth() + 1);
+    salaryInfoEl.style.display = 'block';
+    salaryInfoEl.innerHTML = `💰 Next salary: <strong>${fmtShort(sal)}</strong> &nbsp;<span>· Pay loans due on/after <strong style="color:var(--accent3)">${fmtShort(payingSal)}</strong></span>`;
+
+    const spay = calcSPayLater(date);
+    const bill = calcBillEase(date);
+    const ub = calcUnionBank(date);
+    const ew = calcEastWest(date);
+    const maya = calcMayaCredit(date);
+    const mari = calcMariBank(date);
+
+    const options = [
+      { name: 'SPayLater', dueDate: spay },
+      { name: 'BillEase', dueDate: bill },
+      { name: 'UnionBank CC', dueDate: ub },
+      { name: 'EastWest CC', dueDate: ew },
+      { name: 'Maya Credit', dueDate: maya },
+      { name: 'MariBank', dueDate: mari }
+    ];
+
+    const rankedCards = [
+      { theme:'orange', label:'SPayLater', subtitle:'Cut-off: 5th · Due: 15th', cycle:sPayCycle(date), due:spay },
+      { theme:'red', label:'BillEase', subtitle:'Cut-off: 16th · Due: 25th', cycle:statementCycle(16, date), due:bill },
+      { theme:'green', label:'UnionBank CC', subtitle:'Cut-off: 10th · Due: 25th', cycle:statementCycle(10, date), due:ub },
+      { theme:'blue', label:'EastWest CC', subtitle:'Cut-off: 21st · Due: 15th', cycle:statementCycle(21, date), due:ew },
+      { theme:'green', label:'Maya Credit', subtitle:'Statement: 16th · Due: End of month', cycle:statementCycle(16, date), due:maya },
+      { theme:'gold', label:'MariBank', subtitle:'Auto due date based on withdrawal date', cycle:'Monthly cycle', due:mari }
+    ].sort((a,b) => b.due - a.due);
+
+    resultsEl.innerHTML = `
+      ${recommendGoodBanks(options, date)}
+      <div class="results-grid">
+        ${rankedCards.map((card, index) =>
+          cardHTML(card.theme, card.label, card.subtitle, card.cycle, card.due, date, index === 0)
+        ).join('')}
+      </div>
+    `;
+  }
+
+  function setToday() {
+    const today = new Date();
+    const y = today.getFullYear();
+    const m = String(today.getMonth() + 1).padStart(2, '0');
+    const d = String(today.getDate()).padStart(2, '0');
+    document.getElementById('loanDate').value = `${y}-${m}-${d}`;
+    document.getElementById('salaryDate').value = `${y}-${m}-24`;
+    calculate();
+  }
+
+  document.getElementById('loanDate').addEventListener('change', calculate);
+  document.getElementById('salaryDate').addEventListener('change', calculate);
+
+  document.querySelectorAll('input[name="mariMode"]').forEach(el => {
+    el.addEventListener('change', () => {
+      const mode = document.querySelector('input[name="mariMode"]:checked').value;
+      document.getElementById('existingDueWrap').style.display =
+        mode === 'existing' ? 'block' : 'none';
+      calculate();
+    });
+  });
+
+  document.getElementById('existingDueDay').addEventListener('input', calculate);
+
+  // Auto-load today
+  setToday();
+</script>
+
+</body>
+</html>
